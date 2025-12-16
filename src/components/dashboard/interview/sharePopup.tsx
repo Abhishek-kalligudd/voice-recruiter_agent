@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -73,13 +75,13 @@ Best regards.`
   }
 
   return (
-    <Modal closeOnOutsideClick={false} open={open} onClose={onClose}>
+    <Modal closeOnOutsideClick={false} onClose={onClose} open={open}>
       <div className="w-[28rem] flex flex-col">
         <p className="text-lg font-semibold mb-4">Share via:</p>
         <Tabs
           className="flex flex-col h-full"
-          value={activeTab}
           onValueChange={setActiveTab}
+          value={activeTab}
         >
           <TabsList>
             <TabsTrigger value="mail">Gmail</TabsTrigger>
@@ -110,18 +112,20 @@ Best regards.`
           <TabsContent className="w-full" value="copy">
             <div className="mb-4">
               <input
-                readOnly
                 className="w-full p-2 border border-gray-300 bg-gray-100 rounded"
                 type="text"
                 value={url}
+                readOnly
               />
             </div>
             <Button
               className="flex items-center bg-indigo-600"
               onClick={copyLinkToClipboard}
             >
-              <Copy className="mr-2" size={16} />
-              {copiedLink ? "Copied" : "Copy URL"}
+              <div className="flex items-center">
+                <Copy className="mr-2" size={16} />
+                {copiedLink ? "Copied" : "Copy URL"}
+              </div>
             </Button>
           </TabsContent>
         </Tabs>

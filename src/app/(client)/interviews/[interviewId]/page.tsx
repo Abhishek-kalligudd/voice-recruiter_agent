@@ -299,6 +299,7 @@ function InterviewHome({ params, searchParams }: Props) {
     if (filterStatus === "ALL") {
       return responses;
     }
+    
     return responses?.filter(
       (response) => response?.candidate_status == filterStatus
     );
