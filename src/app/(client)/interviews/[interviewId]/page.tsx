@@ -113,7 +113,6 @@ function InterviewHome({ params, searchParams }: Props) {
     try {
       const res = await fetch(`/api/candidates?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        // Optimistic update or just refetch
         fetchCandidates();
       }
     } catch (err) {
@@ -124,10 +123,7 @@ function InterviewHome({ params, searchParams }: Props) {
   useEffect(() => {
     fetchCandidates();
 
-    // Polling or MutationObserver to refresh when modal closes
-    // This listens for any changes in the document body to catch when the modal finishes its task
     const observer = new MutationObserver(() => {
-      // If you want to be precise, check if the modal is gone
       fetchCandidates();
     });
 
@@ -155,7 +151,6 @@ function InterviewHome({ params, searchParams }: Props) {
     if (!interview || !isGeneratingInsights) {
       fetchInterview();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getInterviewById, params.interviewId, isGeneratingInsights]);
 
@@ -175,6 +170,7 @@ function InterviewHome({ params, searchParams }: Props) {
 
     fetchOrganizationData();
   }, [organization]);
+
   useEffect(() => {
     const fetchResponses = async () => {
       try {
@@ -300,11 +296,9 @@ function InterviewHome({ params, searchParams }: Props) {
     if (!responses) {
       return [];
     }
-
     if (filterStatus === "ALL") {
       return responses;
     }
-
     return responses?.filter(
       (response) => response?.candidate_status == filterStatus
     );
@@ -336,13 +330,13 @@ function InterviewHome({ params, searchParams }: Props) {
                 <TooltipTrigger asChild>
                   <Button
                     variant={"secondary"}
+                    className={
+                      "bg-transparent shadow-none relative text-xs text-indigo-600 px-1 h-7 hover:scale-110 hover:bg-transparent"
+                    }
                     onClick={(event) => {
                       event.stopPropagation();
                       openSharePopup();
                     }}
-                    className={
-                      "bg-transparent shadow-none relative text-xs text-indigo-600 px-1 h-7 hover:scale-110 hover:bg-transparent"
-                    }
                   >
                     <Share2 size={16} />
                   </Button>
@@ -356,6 +350,7 @@ function InterviewHome({ params, searchParams }: Props) {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -380,6 +375,7 @@ function InterviewHome({ params, searchParams }: Props) {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -404,12 +400,13 @@ function InterviewHome({ params, searchParams }: Props) {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     className="bg-transparent shadow-none text-xs text-indigo-600 px-0 h-7 hover:scale-110 relative"
-                    onClick={(event) => {
+                    onClick={() => {
                       router.push(
                         `/interviews/${params.interviewId}?edit=true`
                       );
@@ -506,18 +503,17 @@ function InterviewHome({ params, searchParams }: Props) {
               </div>
 
               <div className="h-full p-1 rounded-md border-none flex flex-col">
-                {/* The ScrollArea now wraps only the list, with flex-1 to fill remaining space */}
                 <ScrollArea className="flex-1">
                   <div className="flex flex-col gap-1 pr-3">
                     {filterResponses().length > 0 ? (
                       filterResponses().map((response) => (
                         <div
+                          key={response?.id}
                           className={`p-2 rounded-md hover:bg-indigo-100 border-2 my-1 text-left text-xs ${
                             searchParams.call == response.call_id
                               ? "bg-indigo-200"
                               : "border-indigo-100"
                           } flex flex-row justify-between cursor-pointer w-full`}
-                          key={response?.id}
                           onClick={() => {
                             router.push(
                               `/interviews/${params.interviewId}?call=${response.call_id}`
@@ -538,9 +534,13 @@ function InterviewHome({ params, searchParams }: Props) {
                             <div className="flex items-center justify-between w-full">
                               <div className="flex flex-col my-auto">
                                 <p className="font-medium mb-[2px]">
-                                  {response?.name
-                                    ? `${response?.name}&apos;s Response`
-                                    : "Anonymous"}
+                                  {response?.name ? (
+                                    <>
+                                      {response.name}&apos;s Response
+                                    </>
+                                  ) : (
+                                    "Anonymous"
+                                  )}
                                 </p>
 
                                 <p className="">
@@ -603,11 +603,10 @@ function InterviewHome({ params, searchParams }: Props) {
                   </div>
                 </ScrollArea>
 
-                {/* Candidates section is now a sibling to ScrollArea, pinned to bottom via flex layout */}
                 <div className="flex flex-col flex-shrink-0 mt-auto pt-2 bg-white sticky bottom-0 z-10">
                   <div className="border-t border-gray-300 my-2" />
                   <h3 className="text-sm font-semibold text-gray-600 mb-1">
-                    Candidates' mails
+                    Candidates&apos; mails
                   </h3>
 
                   <div className="flex flex-col gap-1 max-h-40 overflow-y-auto mb-2 custom-scrollbar">
@@ -619,12 +618,12 @@ function InterviewHome({ params, searchParams }: Props) {
                         >
                           <span className="truncate pr-2">{cand.email}</span>
                           <button
+                            title="Delete candidate"
+                            className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteCandidate(cand.id);
                             }}
-                            className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
-                            title="Delete candidate"
                           >
                             <Trash2 size={12} />
                           </button>
