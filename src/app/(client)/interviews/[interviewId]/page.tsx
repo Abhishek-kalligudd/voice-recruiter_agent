@@ -76,7 +76,7 @@ function InterviewHome({ params, searchParams }: Props) {
   const { organization } = useOrganization();
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [candidates, setCandidates] = useState<{ id: string; email: string }[]>(
-    []
+    [],
   );
 
   const seeInterviewPreviewPage = () => {
@@ -85,8 +85,8 @@ function InterviewHome({ params, searchParams }: Props) {
       const url = interview?.readable_slug
         ? `${protocol}://${base_url}/call/${interview?.readable_slug}`
         : interview.url.startsWith("http")
-        ? interview.url
-        : `https://${interview.url}`;
+          ? interview.url
+          : `https://${interview.url}`;
       window.open(url, "_blank");
     } else {
       console.error("Interview URL is null or undefined.");
@@ -176,7 +176,7 @@ function InterviewHome({ params, searchParams }: Props) {
     const fetchResponses = async () => {
       try {
         const response = await ResponseService.getAllResponses(
-          params.interviewId
+          params.interviewId,
         );
         setResponses(response);
         setLoading(true);
@@ -194,7 +194,7 @@ function InterviewHome({ params, searchParams }: Props) {
   const handleDeleteResponse = (deletedCallId: string) => {
     if (responses) {
       setResponses(
-        responses.filter((response) => response.call_id !== deletedCallId)
+        responses.filter((response) => response.call_id !== deletedCallId),
       );
       if (searchParams.call === deletedCallId) {
         router.push(`/interviews/${params.interviewId}`);
@@ -207,7 +207,7 @@ function InterviewHome({ params, searchParams }: Props) {
       await ResponseService.saveResponse({ is_viewed: true }, response.call_id);
       if (responses) {
         const updatedResponses = responses.map((r) =>
-          r.call_id === response.call_id ? { ...r, is_viewed: true } : r
+          r.call_id === response.call_id ? { ...r, is_viewed: true } : r,
         );
         setResponses(updatedResponses);
       }
@@ -224,7 +224,7 @@ function InterviewHome({ params, searchParams }: Props) {
 
       await InterviewService.updateInterview(
         { is_active: updatedIsActive },
-        params.interviewId
+        params.interviewId,
       );
 
       toast.success("Interview status updated", {
@@ -247,7 +247,7 @@ function InterviewHome({ params, searchParams }: Props) {
     try {
       await InterviewService.updateInterview(
         { theme_color: newColor },
-        params.interviewId
+        params.interviewId,
       );
 
       toast.success("Theme color updated", {
@@ -268,7 +268,7 @@ function InterviewHome({ params, searchParams }: Props) {
       return prevResponses?.map((response) =>
         response.call_id === callId
           ? { ...response, candidate_status: newStatus }
-          : response
+          : response,
       );
     });
   };
@@ -302,7 +302,7 @@ function InterviewHome({ params, searchParams }: Props) {
     }
 
     return responses?.filter(
-      (response) => response?.candidate_status == filterStatus
+      (response) => response?.candidate_status == filterStatus,
     );
   };
 
@@ -407,7 +407,7 @@ function InterviewHome({ params, searchParams }: Props) {
                     className="bg-transparent shadow-none text-xs text-indigo-600 px-0 h-7 hover:scale-110 relative"
                     onClick={(event) => {
                       router.push(
-                        `/interviews/${params.interviewId}?edit=true`
+                        `/interviews/${params.interviewId}?edit=true`,
                       );
                     }}
                   >
@@ -516,7 +516,7 @@ function InterviewHome({ params, searchParams }: Props) {
                           key={response?.id}
                           onClick={() => {
                             router.push(
-                              `/interviews/${params.interviewId}?call=${response.call_id}`
+                              `/interviews/${params.interviewId}?call=${response.call_id}`,
                             );
                             handleResponseClick(response);
                           }}
@@ -540,7 +540,7 @@ function InterviewHome({ params, searchParams }: Props) {
                                 </p>
                                 <p className="">
                                   {formatTimestampToDateHHMM(
-                                    String(response?.created_at)
+                                    String(response?.created_at),
                                   )}
                                 </p>
                               </div>

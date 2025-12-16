@@ -213,7 +213,7 @@ function SharePopup({ open, onClose, shareContent }: SharePopupProps) {
         setTimeout(() => setCopiedLink(false), 2000);
         setTimeout(() => onClose(), 1000);
       },
-      (err) => console.error("Failed to copy", err.message)
+      (err) => console.error("Failed to copy", err.message),
     );
   };
 
@@ -234,12 +234,12 @@ ${url}
 Please make sure you join on time.
 If you have any questions, feel free to reach out.
 
-Best regards.`
+Best regards.`,
     );
 
     window.open(
       `https://mail.google.com/mail/?view=cm&fs=1&tf=1&to=${email}&su=${subject}&body=${body}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -249,7 +249,11 @@ Best regards.`
     <Modal open={open} closeOnOutsideClick={false} onClose={onClose}>
       <div className="w-[28rem] flex flex-col">
         <p className="text-lg font-semibold mb-4">Share via:</p>
-        <Tabs value={activeTab} className="flex flex-col h-full" onValueChange={setActiveTab}>
+        <Tabs
+          value={activeTab}
+          className="flex flex-col h-full"
+          onValueChange={setActiveTab}
+        >
           <TabsList>
             <TabsTrigger value="mail">Gmail</TabsTrigger>
             <TabsTrigger value="copy">URL</TabsTrigger>
@@ -266,7 +270,10 @@ Best regards.`
                 className="w-full p-2 border border-gray-300 rounded"
               />
             </div>
-            <Button className="flex items-center bg-indigo-600" onClick={shareViaGmail}>
+            <Button
+              className="flex items-center bg-indigo-600"
+              onClick={shareViaGmail}
+            >
               <Mail size={16} className="mr-2" />
               Share via Gmail
             </Button>
@@ -282,7 +289,10 @@ Best regards.`
                 readOnly
               />
             </div>
-            <Button className="flex items-center bg-indigo-600" onClick={copyLinkToClipboard}>
+            <Button
+              className="flex items-center bg-indigo-600"
+              onClick={copyLinkToClipboard}
+            >
               <Copy size={16} className="mr-2" />
               {copiedLink ? "Copied" : "Copy URL"}
             </Button>

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 export async function GET() {
@@ -19,7 +19,10 @@ export async function GET() {
 
     return NextResponse.json(data, { status: 200 });
   } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch candidates" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch candidates" },
+      { status: 500 },
+    );
   }
 }
 
@@ -44,7 +47,10 @@ export async function POST(req: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to add candidate" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to add candidate" },
+      { status: 500 },
+    );
   }
 }
 
@@ -57,10 +63,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from("candidates")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("candidates").delete().eq("id", id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

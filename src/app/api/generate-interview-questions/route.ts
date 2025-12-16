@@ -128,7 +128,7 @@ export async function POST(req: Request) {
     if (!process.env.GROQ_API_KEY) {
       return NextResponse.json(
         { error: "GROQ_API_KEY is not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -152,16 +152,15 @@ export async function POST(req: Request) {
     logger.info("Interview questions generated successfully");
 
     return NextResponse.json({ response: content }, { status: 200 });
-
   } catch (error: unknown) {
     logger.error(
       "Error generating interview questions",
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
