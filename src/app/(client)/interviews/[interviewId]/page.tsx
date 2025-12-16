@@ -2,10 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useOrganization } from "@clerk/nextjs";
 import { useInterviews } from "@/contexts/interviews.context";
-import { Share2, Filter, Pencil, UserIcon, Eye, Palette } from "lucide-react";
+import {
+  Share2,
+  Filter,
+  Pencil,
+  UserIcon,
+  Eye,
+  Palette,
+  Trash2,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
 import { ResponseService } from "@/services/responses.service";
@@ -21,6 +29,7 @@ import Modal from "@/components/dashboard/Modal";
 import { toast } from "sonner";
 import { ChromePicker } from "react-color";
 import SharePopup from "@/components/dashboard/interview/sharePopup";
+import AddCandidateModal from "@/components/candids/AddCandidateModal";
 import {
   Tooltip,
   TooltipTrigger,
@@ -66,6 +75,9 @@ function InterviewHome({ params, searchParams }: Props) {
   const [iconColor, seticonColor] = useState<string>("#4F46E5");
   const { organization } = useOrganization();
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [candidates, setCandidates] = useState<{ id: string; email: string }[]>(
+    []
+  );
 
   const seeInterviewPreviewPage = () => {
     const protocol = base_url?.includes("localhost") ? "http" : "https";
@@ -73,13 +85,53 @@ function InterviewHome({ params, searchParams }: Props) {
       const url = interview?.readable_slug
         ? `${protocol}://${base_url}/call/${interview?.readable_slug}`
         : interview.url.startsWith("http")
-          ? interview.url
-          : `https://${interview.url}`;
+        ? interview.url
+        : `https://${interview.url}`;
       window.open(url, "_blank");
     } else {
       console.error("Interview URL is null or undefined.");
     }
   };
+
+  const fetchCandidates = useCallback(async () => {
+    try {
+      const res = await fetch("/api/candidates");
+      if (res.ok) {
+        const data = await res.json();
+        setCandidates(data);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  }, []);
+
+  const deleteCandidate = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this candidate?")) return;
+
+    try {
+      const res = await fetch(`/api/candidates?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        // Optimistic update or just refetch
+        fetchCandidates();
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCandidates();
+
+    // Polling or MutationObserver to refresh when modal closes
+    // This listens for any changes in the document body to catch when the modal finishes its task
+    const observer = new MutationObserver(() => {
+      // If you want to be precise, check if the modal is gone
+      fetchCandidates();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: false });
+    return () => observer.disconnect();
+  }, [fetchCandidates]);
 
   useEffect(() => {
     const fetchInterview = async () => {
@@ -124,7 +176,7 @@ function InterviewHome({ params, searchParams }: Props) {
     const fetchResponses = async () => {
       try {
         const response = await ResponseService.getAllResponses(
-          params.interviewId,
+          params.interviewId
         );
         setResponses(response);
         setLoading(true);
@@ -142,7 +194,7 @@ function InterviewHome({ params, searchParams }: Props) {
   const handleDeleteResponse = (deletedCallId: string) => {
     if (responses) {
       setResponses(
-        responses.filter((response) => response.call_id !== deletedCallId),
+        responses.filter((response) => response.call_id !== deletedCallId)
       );
       if (searchParams.call === deletedCallId) {
         router.push(`/interviews/${params.interviewId}`);
@@ -155,7 +207,7 @@ function InterviewHome({ params, searchParams }: Props) {
       await ResponseService.saveResponse({ is_viewed: true }, response.call_id);
       if (responses) {
         const updatedResponses = responses.map((r) =>
-          r.call_id === response.call_id ? { ...r, is_viewed: true } : r,
+          r.call_id === response.call_id ? { ...r, is_viewed: true } : r
         );
         setResponses(updatedResponses);
       }
@@ -172,7 +224,7 @@ function InterviewHome({ params, searchParams }: Props) {
 
       await InterviewService.updateInterview(
         { is_active: updatedIsActive },
-        params.interviewId,
+        params.interviewId
       );
 
       toast.success("Interview status updated", {
@@ -195,7 +247,7 @@ function InterviewHome({ params, searchParams }: Props) {
     try {
       await InterviewService.updateInterview(
         { theme_color: newColor },
-        params.interviewId,
+        params.interviewId
       );
 
       toast.success("Theme color updated", {
@@ -216,7 +268,7 @@ function InterviewHome({ params, searchParams }: Props) {
       return prevResponses?.map((response) =>
         response.call_id === callId
           ? { ...response, candidate_status: newStatus }
-          : response,
+          : response
       );
     });
   };
@@ -250,7 +302,7 @@ function InterviewHome({ params, searchParams }: Props) {
     }
 
     return responses?.filter(
-      (response) => response?.candidate_status == filterStatus,
+      (response) => response?.candidate_status == filterStatus
     );
   };
 
@@ -355,7 +407,7 @@ function InterviewHome({ params, searchParams }: Props) {
                     className="bg-transparent shadow-none text-xs text-indigo-600 px-0 h-7 hover:scale-110 relative"
                     onClick={(event) => {
                       router.push(
-                        `/interviews/${params.interviewId}?edit=true`,
+                        `/interviews/${params.interviewId}?edit=true`
                       );
                     }}
                   >
@@ -449,95 +501,149 @@ function InterviewHome({ params, searchParams }: Props) {
                 </Select>
               </div>
 
-              <ScrollArea className="h-full p-1 rounded-md border-none">
-                {filterResponses().length > 0 ? (
-                  filterResponses().map((response) => (
-                    <div
-                      className={`p-2 rounded-md hover:bg-indigo-100 border-2 my-1 text-left text-xs ${
-                        searchParams.call == response.call_id
-                          ? "bg-indigo-200"
-                          : "border-indigo-100"
-                      } flex flex-row justify-between cursor-pointer w-full`}
-                      key={response?.id}
-                      onClick={() => {
-                        router.push(
-                          `/interviews/${params.interviewId}?call=${response.call_id}`,
-                        );
-                        handleResponseClick(response);
-                      }}
-                    >
-                      <div className="flex flex-row gap-1 items-center w-full">
-                        {response.candidate_status === "NOT_SELECTED" ? (
-                          <div className="w-[5%] h-full bg-red-500 rounded-sm" />
-                        ) : response.candidate_status === "POTENTIAL" ? (
-                          <div className="w-[5%] h-full bg-yellow-500 rounded-sm" />
-                        ) : response.candidate_status === "SELECTED" ? (
-                          <div className="w-[5%] h-full bg-green-500 rounded-sm" />
-                        ) : (
-                          <div className="w-[5%] h-full bg-gray-400 rounded-sm" />
-                        )}
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex flex-col my-auto">
-                            <p className="font-medium mb-[2px]">
-                              {response?.name
-                                ? `${response?.name}'s Response`
-                                : "Anonymous"}
-                            </p>
-                            <p className="">
-                              {formatTimestampToDateHHMM(
-                                String(response?.created_at),
-                              )}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center justify-center ml-auto flex-shrink-0">
-                            {!response.is_viewed && (
-                              <div className="w-4 h-4 flex items-center justify-center mb-1">
-                                <div className="text-indigo-500 text-xl leading-none">
-                                  ●
+              <div className="h-full p-1 rounded-md border-none flex flex-col">
+                {/* The ScrollArea now wraps only the list, with flex-1 to fill remaining space */}
+                <ScrollArea className="flex-1">
+                  <div className="flex flex-col gap-1 pr-3">
+                    {filterResponses().length > 0 ? (
+                      filterResponses().map((response) => (
+                        <div
+                          className={`p-2 rounded-md hover:bg-indigo-100 border-2 my-1 text-left text-xs ${
+                            searchParams.call == response.call_id
+                              ? "bg-indigo-200"
+                              : "border-indigo-100"
+                          } flex flex-row justify-between cursor-pointer w-full`}
+                          key={response?.id}
+                          onClick={() => {
+                            router.push(
+                              `/interviews/${params.interviewId}?call=${response.call_id}`
+                            );
+                            handleResponseClick(response);
+                          }}
+                        >
+                          <div className="flex flex-row gap-1 items-center w-full">
+                            {response.candidate_status === "NOT_SELECTED" ? (
+                              <div className="w-[5%] h-full bg-red-500 rounded-sm" />
+                            ) : response.candidate_status === "POTENTIAL" ? (
+                              <div className="w-[5%] h-full bg-yellow-500 rounded-sm" />
+                            ) : response.candidate_status === "SELECTED" ? (
+                              <div className="w-[5%] h-full bg-green-500 rounded-sm" />
+                            ) : (
+                              <div className="w-[5%] h-full bg-gray-400 rounded-sm" />
+                            )}
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex flex-col my-auto">
+                                <p className="font-medium mb-[2px]">
+                                  {response?.name
+                                    ? `${response?.name}'s Response`
+                                    : "Anonymous"}
+                                </p>
+                                <p className="">
+                                  {formatTimestampToDateHHMM(
+                                    String(response?.created_at)
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-center justify-center ml-auto flex-shrink-0">
+                                {!response.is_viewed && (
+                                  <div className="w-4 h-4 flex items-center justify-center mb-1">
+                                    <div className="text-indigo-500 text-xl leading-none">
+                                      ●
+                                    </div>
+                                  </div>
+                                )}
+                                <div
+                                  className={`w-6 h-6 flex items-center justify-center ${
+                                    response.is_viewed ? "h-full" : ""
+                                  }`}
+                                >
+                                  {response.analytics &&
+                                    response.analytics.overallScore !==
+                                      undefined && (
+                                      <TooltipProvider>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div className="w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center">
+                                              <span className="text-indigo-500 text-xs font-semibold">
+                                                {
+                                                  response?.analytics
+                                                    ?.overallScore
+                                                }
+                                              </span>
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent
+                                            className="bg-gray-500"
+                                            side="bottom"
+                                            sideOffset={4}
+                                          >
+                                            <span className="text-white font-normal flex flex-row gap-4">
+                                              Overall Score
+                                            </span>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    )}
                                 </div>
                               </div>
-                            )}
-                            <div
-                              className={`w-6 h-6 flex items-center justify-center ${
-                                response.is_viewed ? "h-full" : ""
-                              }`}
-                            >
-                              {response.analytics &&
-                                response.analytics.overallScore !==
-                                  undefined && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="w-6 h-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center">
-                                          <span className="text-indigo-500 text-xs font-semibold">
-                                            {response?.analytics?.overallScore}
-                                          </span>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent
-                                        className="bg-gray-500"
-                                        side="bottom"
-                                        sideOffset={4}
-                                      >
-                                        <span className="text-white font-normal flex flex-row gap-4">
-                                          Overall Score
-                                        </span>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">
-                    No responses to display
-                  </p>
-                )}
-              </ScrollArea>
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-500">
+                        No responses to display
+                      </p>
+                    )}
+                  </div>
+                </ScrollArea>
+
+                {/* Candidates section is now a sibling to ScrollArea, pinned to bottom via flex layout */}
+                <div className="flex flex-col flex-shrink-0 mt-auto pt-2 bg-white sticky bottom-0 z-10">
+                  <div className="border-t border-gray-300 my-2" />
+                  <h3 className="text-sm font-semibold text-gray-600 mb-1">
+                    Candidates' mails
+                  </h3>
+
+                  <div className="flex flex-col gap-1 max-h-40 overflow-y-auto mb-2 custom-scrollbar">
+                    {candidates.length > 0 ? (
+                      candidates.map((cand) => (
+                        <div
+                          key={cand.id}
+                          className="group p-2 bg-gray-50 border border-gray-100 rounded-md text-[10px] text-gray-700 flex flex-row items-center justify-between"
+                        >
+                          <span className="truncate pr-2">{cand.email}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteCandidate(cand.id);
+                            }}
+                            className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
+                            title="Delete candidate"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-[10px] text-gray-400 italic px-1">
+                        No candidates added yet
+                      </p>
+                    )}
+                  </div>
+
+                  <div
+                    className="p-2 rounded-md hover:bg-indigo-100 border-2 text-left text-xs border-dashed border-indigo-300 flex items-center justify-center cursor-pointer w-full"
+                    onClick={() => {
+                      document.getElementById("open-add-candidate")?.click();
+                    }}
+                  >
+                    <span className="text-indigo-600 font-medium">
+                      + Add Candidate
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
             {responses && (
               <div className="w-[85%] rounded-md ">
@@ -557,6 +663,9 @@ function InterviewHome({ params, searchParams }: Props) {
           </div>
         </>
       )}
+
+      <AddCandidateModal />
+
       <Modal
         open={showColorPicker}
         closeOnOutsideClick={false}

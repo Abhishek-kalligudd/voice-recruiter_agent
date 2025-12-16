@@ -124,6 +124,22 @@ const updateResponse = async (payload: any, call_id: string) => {
   return data;
 };
 
+const checkCandidateExists = async (email: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("candidates")
+      .select("email")
+      .eq("email", email)
+      .single();
+
+    if (error || !data) return false;
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
 export const ResponseService = {
   createResponse,
   saveResponse,
@@ -133,4 +149,5 @@ export const ResponseService = {
   deleteResponse,
   getResponseCountByOrganizationId,
   getAllEmails: getAllEmailAddressesForInterview,
+  checkCandidateExists,
 };
