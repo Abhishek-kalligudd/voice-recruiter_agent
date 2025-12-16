@@ -132,6 +132,7 @@ function InterviewHome({ params, searchParams }: Props) {
     });
 
     observer.observe(document.body, { childList: true, subtree: false });
+    
     return () => observer.disconnect();
   }, [fetchCandidates]);
 

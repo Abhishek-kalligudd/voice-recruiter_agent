@@ -220,6 +220,7 @@ function SharePopup({ open, onClose, shareContent }: SharePopupProps) {
   const shareViaGmail = () => {
     if (!email) {
       toast.error("Please enter a recipient email address.");
+      
       return;
     }
 

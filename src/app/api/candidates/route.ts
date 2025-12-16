@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (err) {
     console.error(err);
+    
     return NextResponse.json(
       { error: "Failed to add candidate" },
       { status: 500 }
