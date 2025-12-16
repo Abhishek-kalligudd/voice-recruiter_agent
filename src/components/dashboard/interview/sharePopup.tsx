@@ -75,13 +75,13 @@ Best regards.`
   }
 
   return (
-    <Modal closeOnOutsideClick={false} onClose={onClose} open={open}>
+    <Modal closeOnOutsideClick={false} open={open} onClose={onClose}>
       <div className="w-[28rem] flex flex-col">
         <p className="text-lg font-semibold mb-4">Share via:</p>
         <Tabs
           className="flex flex-col h-full"
-          onValueChange={setActiveTab}
           value={activeTab}
+          onValueChange={setActiveTab}
         >
           <TabsList>
             <TabsTrigger value="mail">Gmail</TabsTrigger>
