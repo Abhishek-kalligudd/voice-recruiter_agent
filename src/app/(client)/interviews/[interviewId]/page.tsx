@@ -132,7 +132,7 @@ function InterviewHome({ params, searchParams }: Props) {
     });
 
     observer.observe(document.body, { childList: true, subtree: false });
-    
+
     return () => observer.disconnect();
   }, [fetchCandidates]);
 
@@ -335,14 +335,14 @@ function InterviewHome({ params, searchParams }: Props) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    className={
-                      "bg-transparent shadow-none relative text-xs text-indigo-600 px-1 h-7 hover:scale-110 hover:bg-transparent"
-                    }
                     variant={"secondary"}
                     onClick={(event) => {
                       event.stopPropagation();
                       openSharePopup();
                     }}
+                    className={
+                      "bg-transparent shadow-none relative text-xs text-indigo-600 px-1 h-7 hover:scale-110 hover:bg-transparent"
+                    }
                   >
                     <Share2 size={16} />
                   </Button>
@@ -539,7 +539,7 @@ function InterviewHome({ params, searchParams }: Props) {
                               <div className="flex flex-col my-auto">
                                 <p className="font-medium mb-[2px]">
                                   {response?.name
-                                    ? `${response?.name}\u2019s Response`
+                                    ? `${response?.name}&apos;s Response`
                                     : "Anonymous"}
                                 </p>
 
