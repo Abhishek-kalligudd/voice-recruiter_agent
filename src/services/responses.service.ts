@@ -50,7 +50,7 @@ const getAllResponses = async (interviewId: string) => {
 };
 
 const getResponseCountByOrganizationId = async (
-  organizationId: string,
+  organizationId: string
 ): Promise<number> => {
   try {
     const { count, error } = await supabase
@@ -132,10 +132,14 @@ const checkCandidateExists = async (email: string) => {
       .eq("email", email)
       .single();
 
-    if (error || !data) return false;
+    if (error || !data) {
+      return false;
+    }
+
     return true;
   } catch (error) {
     console.error(error);
+
     return false;
   }
 };

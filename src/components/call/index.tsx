@@ -85,7 +85,7 @@ function Call({ interview }: InterviewProps) {
   const lastUserResponseRef = useRef<HTMLDivElement | null>(null);
 
   const handleFeedbackSubmit = async (
-    formData: Omit<FeedbackData, "interview_id">,
+    formData: Omit<FeedbackData, "interview_id">
   ) => {
     try {
       const result = await FeedbackService.submitFeedback({
@@ -208,9 +208,10 @@ function Call({ interview }: InterviewProps) {
 
     if (!isRegistered) {
       toast.error(
-        "You are not registered for this interview. Please contact your administrator.",
+        "You are not registered for this interview. Please contact your administrator."
       );
       setLoading(false);
+
       return;
     }
 
@@ -226,7 +227,7 @@ function Call({ interview }: InterviewProps) {
     } else {
       const registerCallResponse: registerCallResponseType = await axios.post(
         "/api/register-call",
-        { dynamic_data: data, interviewer_id: interview?.interviewer_id },
+        { dynamic_data: data, interviewer_id: interview?.interviewer_id }
       );
       if (registerCallResponse.data.registerCallResponse.access_token) {
         await webClient
@@ -263,7 +264,7 @@ function Call({ interview }: InterviewProps) {
   useEffect(() => {
     const fetchInterviewer = async () => {
       const interviewer = await InterviewerService.getInterviewer(
-        interview.interviewer_id,
+        interview.interviewer_id
       );
       setInterviewerImg(interviewer.image);
     };
@@ -276,7 +277,7 @@ function Call({ interview }: InterviewProps) {
       const updateInterview = async () => {
         await ResponseService.saveResponse(
           { is_ended: true, tab_switch_count: tabSwitchCount },
-          callId,
+          callId
         );
       };
 

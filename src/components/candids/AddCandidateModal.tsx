@@ -17,7 +17,9 @@ export default function AddCandidateModal() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!email) return;
+    if (!email) {
+      return;
+    }
 
     setLoading(true);
 
@@ -78,13 +80,13 @@ export default function AddCandidateModal() {
 
             <div className="flex justify-end gap-2">
               <Button
+                disabled={loading}
                 variant="outline"
                 onClick={() => setOpen(false)}
-                disabled={loading}
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              <Button disabled={loading} onClick={handleSubmit}>
                 {loading ? "Adding..." : "Add"}
               </Button>
             </div>
