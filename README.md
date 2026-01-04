@@ -116,7 +116,7 @@ If you find FoloUp helpful, please consider giving us a star on GitHub! It helps
 
 ## Contact
 
-If you have any questions or feedback, please feel free to reach out to us at [suveen.te1[at]gmail.com](mailto: abhishekkalligudd@gmail.com).
+If you have any questions or feedback, please feel free to reach out to us at (mailto: abhishekkalligudd@gmail.com).
 
 ## License
 
